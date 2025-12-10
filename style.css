@@ -46,3 +46,48 @@ canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transfo
 .progress-fill { height: 100%; background-color: #4CAF50; width: 0%; transition: width 0.5s; }
 
 .footer { margin-top: 50px; color: #888; font-size: 0.8rem; }
+
+/* ===== 공용 랭킹 섹션 ===== */
+.ranking-section {
+    margin-top: 2rem;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 16px;
+    padding: 1.5rem 1.8rem;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+}
+
+.ranking-section h2 {
+    margin-top: 0;
+    margin-bottom: 0.4rem;
+}
+
+.ranking-desc {
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.ranking-list {
+    list-style: decimal;
+    padding-left: 1.4rem;
+    margin: 0;
+}
+
+.ranking-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 0.25rem 0;
+    font-size: 0.95rem;
+}
+
+.ranking-name {
+    font-weight: 600;
+}
+
+.ranking-time {
+    font-size: 0.9rem;
+    color: #555;
+}
+

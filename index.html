@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>졸음 방지 스터디 타이머 - Team 9</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.js" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -13,6 +12,11 @@
     <div id="setupScreen" class="setup-screen active">
         <h2>오늘의 공부 목표는 무엇인가요?</h2>
         <input type="text" id="studyGoal" placeholder="예: 웹 프로그래밍 과제, 알고리즘 공부">
+        
+    <div class="input-group">
+        <label for="nicknameInput">닉네임</label>
+        <input id="nicknameInput" type="text" placeholder="예: 슝슝이" />
+    </div>    
         
         <h4>📅 시험(목표) 날짜를 선택하세요</h4>
         <input type="date" id="dDayInput">
@@ -63,6 +67,20 @@
         
         <button class="btn-restart" onclick="location.reload()">새로운 공부 시작</button>
     </div>
+
+        <!-- 결과 섹션 (기존) -->
+    <section id="resultSection" class="card hidden">
+        ...
+    </section>
+
+    <!-- 🏆 공용 랭킹 섹션 (신규) -->
+    <section class="card ranking-section">
+        <h2>🏆 전체 집중 랭킹</h2>
+        <p class="ranking-desc">최근 세션 기준, 집중 시간 상위 10명</p>
+        <ol id="rankingList" class="ranking-list">
+            <li>랭킹을 불러오는 중입니다...</li>
+        </ol>
+    </section>
 
     <div class="footer">© 2025 9조 (Team 9)</div>
 </div>
