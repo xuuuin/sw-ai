@@ -1,0 +1,48 @@
+body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background-color: #ffffff; margin: 0; padding: 20px; text-align: center; }
+.container { max-width: 1000px; margin: 0 auto; }
+
+/* UI 스타일 */
+h1 { font-size: 2rem; color: #333; }
+.setup-screen, .study-screen, .result-screen { display: none; }
+.active { display: block; }
+
+input[type="text"], input[type="date"] { padding: 10px; font-size: 1.2rem; width: 80%; margin: 10px 0; text-align: center; }
+.radio-group { display: flex; flex-direction: column; align-items: center; margin: 20px 0; }
+.radio-label { margin: 5px; font-size: 1.1rem; cursor: pointer; }
+
+button {
+    padding: 15px 30px; font-size: 1.2rem; margin: 10px; cursor: pointer;
+    border: none; border-radius: 5px; color: white; transition: 0.3s;
+}
+.btn-start { background-color: #FF4B4B; }
+.btn-pause { background-color: #F44336; }
+.btn-end { background-color: #333; }
+.btn-restart { background-color: #4CAF50; }
+
+/* 공부 화면 스타일 */
+.d-day-badge {
+    background-color: #FF5722; color: white; padding: 5px 15px; border-radius: 20px;
+    font-size: 1.5rem; font-weight: bold; display: inline-block; margin-bottom: 10px;
+}
+.study-goal-display { font-size: 2rem; font-weight: bold; color: #4CAF50; margin-bottom: 20px; }
+.timer-display { font-size: 5rem; font-weight: bold; color: #f44336; margin: 20px 0; }
+
+/* 웹캠 및 캔버스 */
+.video-container { position: relative; width: 640px; height: 480px; margin: 0 auto; background: #000; border-radius: 10px; overflow: hidden; }
+video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1); object-fit: cover; }
+canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1); }
+.status-overlay {
+    position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.5); color: white;
+    padding: 5px 10px; border-radius: 5px; font-size: 1rem; z-index: 10;
+}
+.pause-overlay {
+    display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); color: yellow; font-size: 3rem; font-weight: bold;
+    align-items: center; justify-content: center; z-index: 20;
+}
+
+/* 통계 화면 */
+.progress-bar { width: 100%; background-color: #ddd; height: 30px; border-radius: 15px; margin: 20px 0; overflow: hidden; }
+.progress-fill { height: 100%; background-color: #4CAF50; width: 0%; transition: width 0.5s; }
+
+.footer { margin-top: 50px; color: #888; font-size: 0.8rem; }
