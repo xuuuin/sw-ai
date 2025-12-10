@@ -7,10 +7,9 @@ import mediapipe as mp
 import math
 import base64
 import os
+from datetime import datetime, date # [추가] 날짜 계산을 위한 모듈
 
 # Base64 파일 경로 설정
-# Base64 데이터가 저장된 파일 이름을 여기에 입력하세요.
-# (예: 'alarm_b64.txt'와 같은 디렉토리에 있어야 합니다)
 ALARM_FILE_PATH = "alarm_b64.txt" 
 ALARM_WAV_FILENAME = "alarm.wav"
 
@@ -43,38 +42,27 @@ def decode_alarm_sound(file_path, output_filename):
 if decode_alarm_sound(ALARM_FILE_PATH, ALARM_WAV_FILENAME):
     try:
         pygame.mixer.init()
-        # 주의: Streamlit은 멀티스레딩 환경에서 작동하지 않으므로, 
-        # 웹캠과 Pygame을 동시에 실행할 때 간헐적인 충돌이나 지연이 발생할 수 있습니다.
-        # Streamlit Cloud 환경에서는 Pygame이 작동하지 않을 수 있습니다.
         ALARM_SOUND = pygame.mixer.Sound(ALARM_WAV_FILENAME)
     except pygame.error as e:
         st.error(f"Pygame 사운드 초기화 실패: {e}")
-        # Pygame 실패해도 웹캠 모니터링은 계속되도록 st.stop()은 제거
 else:
-    # 알람 파일이 없어도 앱 실행은 계속되도록 처리 (단, 알람은 울리지 않음)
     pass
 
 
-# 알람 및 볼륨 설정 (기존 코드와 동일)
+# 알람 및 볼륨 설정
 alarm_playing = False
 last_alarm_time = 0.0
 ALARM_INTERVAL = 1
-BASE_VOLUME = 0.3  # 최소 볼륨
-MAX_VOLUME = 1.0   # 최대 볼륨 (pygame 볼륨은 0.0 ~ 1.0)
-RAMP_DURATION = 2.0  # 볼륨이 최대치에 도달하는 데 걸리는 시간(초)
+BASE_VOLUME = 0.3
+MAX_VOLUME = 1.0
+RAMP_DURATION = 2.0
 
 def play_alarm(now, eyes_closed_time, EYE_CLOSED_TIME_SEC):
-    """
-    눈 감은 시간이 길어질수록 볼륨을 키운다.
-    eyes_closed_time: 눈 감고 있는 누적 시간 (초)
-    """
     global last_alarm_time, alarm_playing
     
-    # Pygame 초기화에 실패했거나 ALARM_SOUND 객체가 없으면 재생 시도하지 않음
     if 'ALARM_SOUND' not in globals():
         return
 
-    # 졸음 기준(EYE_CLOSED_TIME_SEC) 이후부터 증가분 계산
     extra = max(0.0, eyes_closed_time - EYE_CLOSED_TIME_SEC)
     ratio = min(1.0, extra / RAMP_DURATION)
     volume = BASE_VOLUME + (MAX_VOLUME - BASE_VOLUME) * ratio
@@ -94,7 +82,7 @@ def stop_alarm():
         alarm_playing = False
 
 # ========================
-# 2. MediaPipe 준비 (기존 코드와 동일)
+# 2. MediaPipe 준비
 # ========================
 mp_face_mesh = mp.solutions.face_mesh
 mp_drawing = mp.solutions.drawing_utils
@@ -103,7 +91,6 @@ LEFT_EYE_IDX = [33, 160, 158, 133, 153, 144]
 RIGHT_EYE_IDX = [362, 385, 387, 263, 373, 380]
 
 def calc_EAR(landmarks, eye_idx_list, img_w, img_h):
-    """눈 랜드마크 좌표로 EAR 계산"""
     points = []
     for idx in eye_idx_list:
         lm = landmarks[idx]
@@ -115,7 +102,6 @@ def calc_EAR(landmarks, eye_idx_list, img_w, img_h):
     def dist(a, b):
         return math.hypot(a[0] - b[0], a[1] - b[1])
 
-    # EAR 공식: (수직거리1 + 수직거리2) / (2 * 수평거리)
     ear = (dist(p2, p6) + dist(p3, p5)) / (2.0 * dist(p1, p4) + 1e-6)
     return ear, points
 
@@ -125,33 +111,27 @@ def calc_EAR(landmarks, eye_idx_list, img_w, img_h):
 
 st.set_page_config(layout="wide")
 
-# CSS for centering and full screen (기존 코드와 동일)
 st.markdown("""
     <style>
-    /* Streamlit 메인 블록을 중앙에 배치 및 넓은 레이아웃 활용 */
     .block-container {
         padding-top: 2rem !important;
         padding-bottom: 2rem !important;
     }
-    /* 텍스트 입력 중앙 정렬 */
     .stTextInput > div > div > input {
         text-align: center;
         font-size: 1.5rem;
         padding: 10px;
         width: 100%;
     }
-    /* 라디오 버튼 중앙 정렬 */
     .stRadio > label {
         justify-content: center;
     }
-    /* 버튼 크기 및 폰트 설정 */
     .stButton > button {
         width: 150px;
         height: 50px;
         font-size: 1.2rem;
         margin: 10px;
     }
-    /* 목표 텍스트 스타일 */
     .study-goal {
         font-size: 2.5rem;
         font-weight: bold;
@@ -159,7 +139,6 @@ st.markdown("""
         margin-bottom: 20px;
         text-align: center;
     }
-    /* 메인 타이머 스타일 */
     .main-timer {
         font-size: 5rem;
         font-weight: bold;
@@ -167,7 +146,6 @@ st.markdown("""
         margin-bottom: 20px;
         text-align: center;
     }
-    /* 푸터 스타일 */
     .footer {
         position: fixed;
         left: 0;
@@ -199,6 +177,8 @@ if 'is_paused' not in st.session_state:
     st.session_state.is_paused = False
 if 'total_elapsed_time' not in st.session_state:
     st.session_state.total_elapsed_time = 0.0
+if 'd_day_target' not in st.session_state: # [추가] D-Day 날짜 저장 변수
+    st.session_state.d_day_target = date.today()
 
 
 def format_time(sec):
@@ -210,6 +190,18 @@ if not st.session_state.study_started:
     # --- 설정 화면 ---
     st.markdown("<h2 style='text-align: center;'>오늘의 공부 목표는 무엇인가요?</h2>", unsafe_allow_html=True)
     study_goal_input = st.text_input("", placeholder="예: Streamlit 앱 개발, 선형대수학 복습")
+
+    # [추가] --- D-Day 날짜 입력 ---
+    st.markdown("<h4 style='text-align: center; margin-top: 20px;'>📅 시험(목표) 날짜를 선택하세요</h4>", unsafe_allow_html=True)
+    col_d1, col_d2, col_d3 = st.columns([1, 2, 1])
+    with col_d2:
+        d_day_input = st.date_input(
+            "날짜 선택",
+            value=date.today(),
+            min_value=date.today(),
+            label_visibility="collapsed"
+        )
+    # ---------------------------
 
     st.markdown("<h3 style='text-align: center;'>집중 모드(졸음 감지 민감도)를 선택하세요.</h3>", unsafe_allow_html=True)
     sensitivity_options = {
@@ -228,6 +220,7 @@ if not st.session_state.study_started:
     if st.button("공부 시작", key="start_study_button"):
         if study_goal_input:
             st.session_state.study_goal = study_goal_input
+            st.session_state.d_day_target = d_day_input # [추가] 목표 날짜 저장
             st.session_state.EYE_CLOSED_TIME_SEC = sensitivity_options[selected_option]
             st.session_state.study_started = True
             st.session_state.study_session_start_time = time.time()
@@ -240,7 +233,34 @@ if not st.session_state.study_started:
             st.warning("공부 목표를 입력해주세요!")
 else:
     # --- 학습 진행 화면 ---
-    st.markdown(f"<p class='study-goal'>{st.session_state.study_goal}</p>", unsafe_allow_html=True)
+    
+    # [추가] --- D-Day 계산 및 표시 ---
+    today = date.today()
+    target = st.session_state.d_day_target
+    delta = target - today
+    days_left = delta.days
+
+    if days_left > 0:
+        d_day_str = f"D-{days_left}"
+        d_day_color = "#FF5722" # 주황색
+    elif days_left == 0:
+        d_day_str = "D-Day"
+        d_day_color = "#F44336" # 빨간색
+    else:
+        d_day_str = f"D+{abs(days_left)}" # 지난 날짜
+        d_day_color = "#9E9E9E" # 회색
+
+    st.markdown(f"""
+        <div style='text-align: center; margin-bottom: 10px;'>
+            <span style='font-size: 1.5rem; font-weight: bold; background-color: {d_day_color}; color: white; padding: 5px 15px; border-radius: 20px; vertical-align: middle; margin-right: 10px;'>
+                {d_day_str}
+            </span>
+            <div class='study-goal' style='margin-top: 10px;'>
+                {st.session_state.study_goal}
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+    # ---------------------------
 
     study_timer_placeholder = st.empty()
     webcam_placeholder = st.empty()
@@ -292,7 +312,7 @@ else:
                     frame = cv2.flip(frame, 1)
                     h, w, _ = frame.shape
                     
-                    # 반투명 검은색 오버레이 (웹캠 화면 위에 어둡게 표시)
+                    # 반투명 검은색 오버레이
                     overlay = frame.copy()
                     cv2.rectangle(overlay, (0, 0), (w, h), (0, 0, 0), -1)
                     alpha = 0.7
@@ -301,7 +321,6 @@ else:
                     # 텍스트
                     cv2.putText(combined_frame, "PAUSED", (w // 2 - 150, h // 2), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 3, cv2.LINE_AA)
                     
-                    # 경고 제거: use_column_width -> use_container_width
                     webcam_placeholder.image(combined_frame, channels="BGR", use_container_width=True)
                 
                 status_placeholder.text("일시 정지됨")
@@ -347,9 +366,8 @@ else:
 
                 # EAR 임계값 설정
                 EAR_THRESHOLD = 0.21 
-                # 스파르타 모드(매우 짧은 허용 시간)에서는 EAR 임계값을 높여 더 민감하게 반응
                 if st.session_state.EYE_CLOSED_TIME_SEC <= 1.0: 
-                     EAR_THRESHOLD = 0.25 
+                      EAR_THRESHOLD = 0.25 
                     
                 if current_ear > EAR_THRESHOLD:
                     eyes_open = True
@@ -385,7 +403,7 @@ else:
             # 화면에 상태/시간 표시
             status_text = f"State: {state} | EAR: {current_ear:.3f} | EyesClosed: {eyes_closed_time:.1f}s"
             if state == "DROWSY":
-                status_color = (0, 0, 255) # Red (BGR)
+                status_color = (0, 0, 255) # Red
             elif state == "AWAY":
                 status_color = (0, 165, 255) # Orange
             elif state == "FOCUS":
@@ -403,7 +421,6 @@ else:
                 2,
             )
             
-            # 경고 제거: use_column_width -> use_container_width
             webcam_placeholder.image(frame, channels="BGR", use_container_width=True)
             status_placeholder.text(
                 f"집중 시간: {format_time(st.session_state.focused_time)} | "
@@ -413,8 +430,7 @@ else:
 
             time.sleep(0.01)
 
-        # 공부 종료 시 통계 출력 (반복문 종료 후 실행)
-       # =======================
+# =======================
 # 공부 종료 시 통계 출력
 # =======================
 if not st.session_state.study_started and st.session_state.total_elapsed_time > 0:
@@ -438,7 +454,8 @@ if not st.session_state.study_started and st.session_state.total_elapsed_time > 
     if st.button("새로운 공부 시작"):
         st.session_state.clear()
         st.rerun()
-# 웹캠이 실제로 열렸을 때만 release() 실행
+
+# 웹캠 리소스 해제
 try:
     if 'cap' in locals() or 'cap' in globals():
         cap.release()
@@ -446,16 +463,13 @@ except:
     pass
 
 cv2.destroyAllWindows()
-
     
-    # 디코딩된 임시 파일 삭제 (선택 사항)
+# 임시 파일 삭제
 if os.path.exists(ALARM_WAV_FILENAME):
         try:
             os.remove(ALARM_WAV_FILENAME)
         except PermissionError:
-            # Pygame이 파일을 놓아주지 않을 수 있습니다.
             pass
-
 
 st.markdown("""
     <div class="footer">
